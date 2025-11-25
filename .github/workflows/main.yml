@@ -1,0 +1,38 @@
+name: Deploy to Azure Static Website
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure CLI - Upload to Storage
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+              --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }} \
+              --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}" \
+              --destination '$web' \
+              --source ./website \
+              --overwrite \
+              --pattern '*'
+
+      - name: Display Website URL
+        run: |
+          echo "=================================="
+          echo "✅ Deployment Successful!"
+          echo "=================================="
+          echo ""
+          echo "🌐 Your website is live at:"
+          echo "https://${{ secrets.STORAGE_ACCOUNT_NAME }}.z13.web.core.windows.net/"
+          echo ""
+          echo "=================================="
